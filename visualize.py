@@ -19,6 +19,8 @@ from matplotlib.patches import Polygon
 from matplotlib.image import imsave
 import IPython.display
 
+import imutils
+import cv2 
 import utils
 
 
@@ -59,7 +61,7 @@ def random_colors(N, bright=True):
     brightness = 1.0 if bright else 0.7
     hsv = [(i / N, 1, brightness) for i in range(N)]
     colors = list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv))
-    random.shuffle(colors)
+    #random.shuffle(colors)
     return colors
 
 
@@ -163,20 +165,23 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
     else:
         assert boxes.shape[0] == masks.shape[-1] == class_ids.shape[0]
 
-    if not ax:
-        fig1, ax = plt.subplots(1, figsize=figsize)
 
     # Generate random colors
     colors = random_colors(N)
 
+    ## Some ground_classes test cases
+    ground_classes=['person', 'bicycle', 'car', 'motorcycle','bus', 'train', 'truck']
+
+    
     # Show area outside image boundaries.
     height, width = image.shape[:2]
-    ax.set_ylim(height, 0)
-    ax.set_xlim(0, width)
-    ax.axis('off')
-    ax.set_title(title)
+
 
     masked_image = image.astype(np.uint32).copy()
+    
+    frame_adjusted = np.ndarray(shape=np.shape(masked_image), dtype=np.dtype(np.uint8))
+    frame_adjusted[:,:,:] = masked_image[:,:,2::-1]
+
     for i in range(N):
         color = colors[i]
 
@@ -185,38 +190,111 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
             # Skip this instance. Has no bbox. Likely lost in image cropping.
             continue
         y1, x1, y2, x2 = boxes[i]
-        p = patches.Rectangle((x1, y1), x2 - x1, y2 - y1, linewidth=2,
-                              alpha=0.7, linestyle="dashed",
-                              edgecolor=color, facecolor='none')
-        ax.add_patch(p)
+        x, y, w, h = int(x1), int(y1), int(x2 - x1), int(y2 - y1)
+        
+        
+        
+        cv2.rectangle(frame_adjusted, (x, y), (x+w,y+h), (0,0,255), 1, 8, 0)
+        
+        
+
 
         # Label
         class_id = class_ids[i]
         score = scores[i] if scores is not None else None
         label = class_names[class_id]
         x = random.randint(x1, (x1 + x2) // 2)
-        caption = "{} {:.3f}".format(label, score) if score else label
-        ax.text(x1, y1 + 8, caption,
-                color='w', size=11, backgroundcolor="none")
+        caption = "{} {:.2f}".format(label, score) if score else label
+        
+        
+        font                   = cv2.FONT_HERSHEY_PLAIN
+        bottomLeftCornerOfText = (x1, y1 + 8)
+        fontScale              = 1
+        fontColor              = (255,255,255)
+        lineType               = 2
+        
+        cv2.putText(frame_adjusted,caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
 
         # Mask
-        mask = masks[:, :, i]
-        masked_image = apply_mask(masked_image, mask, color)
-
+        mask = masks[:, :, i]      
+        frame_adjusted = apply_mask(frame_adjusted, mask, color)
+        
         # Mask Polygon
         # Pad to ensure proper polygons for masks that touch image edges.
         padded_mask = np.zeros(
             (mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
         padded_mask[1:-1, 1:-1] = mask
         contours = find_contours(padded_mask, 0.5)
-        for verts in contours:
+        
+        (_, cnts, _) = cv2.findContours(padded_mask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        
+      
+
+        # loop over the contours
+        for c in cnts:
+                        
+            
+            # compute the center of the contour
+            M = cv2.moments(c)
+            try:
+                area = cv2.contourArea(c)
+                
+                
+                cX = int(M["m10"] / M["m00"])
+                cY = int(M["m01"] / M["m00"])
+         
+         
+                font                   = cv2.FONT_HERSHEY_PLAIN
+                bottomLeftCornerOfText = (cX, cY + 8)
+                fontScale              = 1
+                fontColor              = (255,255,255)
+                lineType               = 2
+                caption                = "{:.0f}".format(area)
+                    
+                cv2.putText(frame_adjusted,caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
+                
+                         
+         
+                
+                # draw the contour and center of the shape on the image
+                cv2.drawContours(frame_adjusted, [c], -1, (0, 255, 0), 2)
+                cv2.circle(frame_adjusted, (cX, cY), 2, (0, 0, 255), -1)
+                
+                
+                # determine the most extreme points along the contour
+                extLeft = tuple(c[c[:, :, 0].argmin()][0])
+                extRight = tuple(c[c[:, :, 0].argmax()][0])
+                extTop = tuple(c[c[:, :, 1].argmin()][0])
+                extBot = tuple(c[c[:, :, 1].argmax()][0])
+                    
+            
+            
+                cv2.circle(frame_adjusted, extLeft, 2, (255, 255, 0), -1)
+                cv2.circle(frame_adjusted, extRight, 2, (125,125, 125), -1)
+                cv2.circle(frame_adjusted, extTop, 2, (255, 0, 0), -1)
+                cv2.circle(frame_adjusted, extBot, 2, (0, 0, 255), -1)
+                
+                if label in ground_classes:
+                    drawline(frame_adjusted,(width/2,height),extBot,color,thickness=1,style='dotted',gap=5)
+                    drawline(frame_adjusted,extLeft,extRight,(0,0,255),thickness=1,style='dotted',gap=2)
+                             
+            except ZeroDivisionError:
+                print("Error center calculation")
+                
+           
+        
+
+        
+        #Nice code for x y data
+        #for verts in contours:
             # Subtract the padding and flip (y, x) to (x, y)
-            verts = np.fliplr(verts) - 1
-            p = Polygon(verts, facecolor="none", edgecolor=color)
-            ax.add_patch(p)
-    ax.imshow(masked_image.astype(np.uint8))
-    fig1.savefig(saveLoc, transparent = False, bbox_inches = 'tight', pad_inches = 0, dpi = 100)
-    plt.close(fig1)
+            #verts = np.fliplr(verts) - 1
+
+            
+    #Save image
+    cv2.imwrite(saveLoc, frame_adjusted)
+    
 
 def draw_rois(image, rois, refined_rois, mask, class_ids, class_names, limit=10):
     """
@@ -238,7 +316,7 @@ def draw_rois(image, rois, refined_rois, mask, class_ids, class_names, limit=10)
         plt.title("{} ROIs".format(len(ids)))
 
     # Show area outside image boundaries.
-    ax.set_ylim(image.shape[0] + 20, -20)
+    ax.set_ylim(image.shape[0],)
     ax.set_xlim(-50, image.shape[1] + 20)
     ax.axis('off')
 
@@ -570,3 +648,45 @@ def display_weight_stats(model):
                 "{:+9.4f}".format(w.std()),
             ])
     display_table(table)
+
+
+
+
+def drawline(img,pt1,pt2,color,thickness=1,style='dotted',gap=20):
+    dist =((pt1[0]-pt2[0])**2+(pt1[1]-pt2[1])**2)**.5
+    pts= []
+    for i in  np.arange(0,dist,gap):
+        r=i/dist
+        x=int((pt1[0]*(1-r)+pt2[0]*r)+.5)
+        y=int((pt1[1]*(1-r)+pt2[1]*r)+.5)
+        p = (x,y)
+        pts.append(p)
+
+    if style=='dotted':
+        for p in pts:
+            cv2.circle(img,p,thickness,color,-1)
+    else:
+        s=pts[0]
+        e=pts[0]
+        i=0
+        for p in pts:
+            s=e
+            e=p
+            if i%2==1:
+                cv2.line(img,s,e,color,thickness)
+            i+=1
+
+def drawpoly(img,pts,color,thickness=1,style='dotted',):
+    s=pts[0]
+    e=pts[0]
+    pts.append(pts.pop(0))
+    for p in pts:
+        s=e
+        e=p
+        drawline(img,s,e,color,thickness,style)
+
+def drawrect(img,pt1,pt2,color,thickness=1,style='dotted'):
+    pts = [pt1,(pt2[0],pt1[1]),pt2,(pt1[0],pt2[1])] 
+    drawpoly(img,pts,color,thickness,style)
+
+

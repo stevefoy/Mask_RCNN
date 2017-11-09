@@ -12,6 +12,7 @@ import coco
 import utils
 import model as modellib
 import visualize
+from tensorflow.python.ops.metrics_impl import sensitivity_at_specificity
 
 
 class InferenceConfig(coco.CocoConfig):
@@ -71,8 +72,8 @@ def main():
     
     
     
-    IMAGETest_DIR = "/home/stephen/Videos/France_TestVideo/seq1"
-    IMAGETestResult_DIR = "/home/stephen/Videos/France_TestVideo/seq1Result"
+    IMAGETest_DIR = "/home/stephen/Videos/France_TestVideo/PBCS/images"
+    IMAGETestResult_DIR = "/home/stephen/Videos/France_TestVideo/PBCS/results"
     # Load a random image from the images folder
     file_names = next(os.walk(IMAGETest_DIR))[2]
     
@@ -82,7 +83,7 @@ def main():
     
     for index, file_name in enumerate(file_names) :
         
-        print(index)
+        print(file_name," ",index)
         if index == 10:  # There's gotta be a better way.
             break
             
