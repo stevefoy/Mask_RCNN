@@ -103,8 +103,7 @@ def main():
                    'teddy bear', 'hair drier', 'toothbrush']
     
     
-    
-    
+
     
     if dirs.get_inputDir()=="":
         #IMAGETest_DIR = "/home/stephen/Videos/France_TestVideo/PBCS/images"

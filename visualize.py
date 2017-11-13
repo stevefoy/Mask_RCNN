@@ -18,11 +18,11 @@ import matplotlib.lines as lines
 from matplotlib.patches import Polygon
 from matplotlib.image import imsave
 import IPython.display
-
+ 
 import imutils
 import cv2 
 import utils
-
+import util.annotation as annotation
 
 ############################################################
 #  Visualization
@@ -251,7 +251,7 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
                 cv2.putText(frame_adjusted,caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
                  
                 
-                # draw the contour and center of the shape on the image
+                # draw the contour and center of the shape on the imag
                 cv2.drawContours(frame_adjusted, [c], -1, (0, 255, 0), 1)
                 cv2.circle(frame_adjusted, (cX, cY), 2, (0, 0, 255), -1)
                 
