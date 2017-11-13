@@ -171,7 +171,7 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
 
     ## Some ground_classes test cases
     ground_classes=['person', 'bicycle', 'car', 'motorcycle','bus', 'train', 'truck']
-
+    ground_classesCount = [0]*len(ground_classes)
     
     # Show area outside image boundaries.
     height, width = image.shape[:2]
@@ -191,11 +191,8 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
             continue
         y1, x1, y2, x2 = boxes[i]
         x, y, w, h = int(x1), int(y1), int(x2 - x1), int(y2 - y1)
-        
-        
-        
         cv2.rectangle(frame_adjusted, (x, y), (x+w,y+h), (0,0,255), 1, 8, 0)
-        
+
         
 
 
@@ -206,6 +203,9 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
         x = random.randint(x1, (x1 + x2) // 2)
         caption = "{} {:.2f}".format(label, score) if score else label
         
+        if label in ground_classes:
+            #Stats, if a class exists increase counters
+            ground_classesCount[ground_classes.index(label)]=ground_classesCount[ ground_classes.index(label)] +1   
         
         font                   = cv2.FONT_HERSHEY_PLAIN
         bottomLeftCornerOfText = (x1, y1 + 8)
@@ -215,18 +215,18 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
         
         cv2.putText(frame_adjusted,caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
 
+
         # Mask
         mask = masks[:, :, i]      
         frame_adjusted = apply_mask(frame_adjusted, mask, color)
         
-        # Mask Polygon
-        # Pad to ensure proper polygons for masks that touch image edges.
-        padded_mask = np.zeros(
-            (mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
+        # Mask Polygon, Pad to ensure proper polygons for masks that touch image edges.
+        padded_mask = np.zeros((mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
         padded_mask[1:-1, 1:-1] = mask
-        contours = find_contours(padded_mask, 0.5)
-        
+        #contours = find_contours(padded_mask, 0.5)
+        #cv2.CHAIN_APPROX_SIMPLE does, removes all redundant points and compresses the contour.
         (_, cnts, _) = cv2.findContours(padded_mask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        
 
         
       
@@ -243,22 +243,16 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
                 
                 cX = int(M["m10"] / M["m00"])
                 cY = int(M["m01"] / M["m00"])
-         
-         
-                font                   = cv2.FONT_HERSHEY_PLAIN
+                   
                 bottomLeftCornerOfText = (cX, cY + 8)
-                fontScale              = 1
                 fontColor              = (255,255,255)
-                lineType               = 2
                 caption                = "{:.0f}".format(area)
                     
                 cv2.putText(frame_adjusted,caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
-                
-                         
-         
+                 
                 
                 # draw the contour and center of the shape on the image
-                cv2.drawContours(frame_adjusted, [c], -1, (0, 255, 0), 2)
+                cv2.drawContours(frame_adjusted, [c], -1, (0, 255, 0), 1)
                 cv2.circle(frame_adjusted, (cX, cY), 2, (0, 0, 255), -1)
                 
                 
@@ -281,19 +275,28 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
                              
             except ZeroDivisionError:
                 print("Error center calculation")
-                
-           
-        
-
-        
-        #Nice code for x y data
-        #for verts in contours:
-            # Subtract the padding and flip (y, x) to (x, y)
-            #verts = np.fliplr(verts) - 1
-
-            
+                         
     #Save image
+    x1=10
+    y1=30
+    for label in ground_classes:
+        
+        font                   = cv2.FONT_HERSHEY_PLAIN
+        bottomLeftCornerOfText = (x1,y1 )
+        fontScale              = 1
+        fontColor              = (255,255,255)
+        lineType               = 2
+        caption = "{} {}".format(ground_classes[ground_classes.index(label)], ground_classesCount[ground_classes.index(label)])
+        cv2.putText(frame_adjusted, caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
+               
+        print(ground_classes[ground_classes.index(label)],ground_classesCount[ground_classes.index(label)]) 
+        
+        y1=y1+20
+        
+    
     cv2.imwrite(saveLoc, frame_adjusted)
+    
+
     
 
 def draw_rois(image, rois, refined_rois, mask, class_ids, class_names, limit=10):
@@ -600,6 +603,7 @@ def draw_boxes(image, boxes=None, refined_boxes=None,
                 (mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
             padded_mask[1:-1, 1:-1] = mask
             contours = find_contours(padded_mask, 0.5)
+            
             for verts in contours:
                 # Subtract the padding and flip (y, x) to (x, y)
                 verts = np.fliplr(verts) - 1
