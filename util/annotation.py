@@ -88,9 +88,9 @@ class Annotation:
         JsonStr="{"
         JsonStr+=str("\"z_order\": "+str(self.z_order)+", ")
         JsonStr+=str("\"segmentation\":"+str(self.segmentation)+",")
-        JsonStr+=str("\"tags\":[\""+str(self.tags)+"\"], ")
+        JsonStr+=str("\"tags\":"+json.dumps(self.tags)+", ")
         JsonStr+=str("\"image_id\": \""+xstr(self.image_id)+"\", ")
-        JsonStr+=str("\"id\": \""+xstr(self.id)+"\", ")
+        JsonStr+=str("\"id: " +xstr(self.id)+" ")
         JsonStr+=str("}")
         return JsonStr
 
@@ -113,13 +113,12 @@ class ImageAnnotation:
         
             
     def loadJSON(self, s):
-          
+        
         self.job_id=None if 'job_id' not in s else s['job_id']
         self.job_batch_id=None if 'job_batch_id' not in s else s['job_batch_id']
         self.reference_id=None if 'reference_id' not in s else s['reference_id']
         if 'answer_summary' in s:
-            self.answer_summary=AnswerSummary(s['answer_summary'])
-            
+            self.answer_summary=AnswerSummary(s['answer_summary'])            
         self.status=None if 'status' not in s else s['status']
         self.annotation_annotator_type=None if 'annotation-annotator_type' not in s else s['annotation-annotator_type']
         self.finished_at=None if 'finished_at' not in s else s['finished_at']
