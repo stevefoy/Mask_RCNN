@@ -22,7 +22,7 @@ import IPython.display
 import imutils
 import cv2 
 import utils
-import util.annotation as annotation
+import util as JsonAno
 
 ############################################################
 #  Visualization
@@ -147,9 +147,15 @@ def display_instances(image, boxes, masks, class_ids, class_names,
             ax.add_patch(p)
     ax.imshow(masked_image.astype(np.uint8))
 
-def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
+#def save_instances(saveLoc, saveLocJson, imageName, image, boxes, masks, class_ids, class_names,
+#                      scores=None, title="",
+#                      figsize=(16, 16), ax=None):
+
+def save_instances(saveLoc,saveLocJson,  imageName, image, boxes, masks, class_ids, class_names,
                       scores=None, title="",
-                      figsize=(16, 16), ax=None):
+                      figsize=(16, 16), ax=None):    
+    
+    
     """
     boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
     masks: [num_instances, height, width]
@@ -181,7 +187,10 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
     
     frame_adjusted = np.ndarray(shape=np.shape(masked_image), dtype=np.dtype(np.uint8))
     frame_adjusted[:,:,:] = masked_image[:,:,2::-1]
-
+    
+    
+    jsonFilewriter = JsonAno.ImageDBAnnotation(imageName)
+    
     for i in range(N):
         color = colors[i]
 
@@ -193,9 +202,6 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
         x, y, w, h = int(x1), int(y1), int(x2 - x1), int(y2 - y1)
         cv2.rectangle(frame_adjusted, (x, y), (x+w,y+h), (0,0,255), 1, 8, 0)
 
-        
-
-
         # Label
         class_id = class_ids[i]
         score = scores[i] if scores is not None else None
@@ -205,8 +211,11 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
         
         if label in ground_classes:
             #Stats, if a class exists increase counters
-            ground_classesCount[ground_classes.index(label)]=ground_classesCount[ ground_classes.index(label)] +1   
-        
+            ground_classesCount[ground_classes.index(label)]=ground_classesCount[ ground_classes.index(label)] +1
+            
+
+               
+            
         font                   = cv2.FONT_HERSHEY_PLAIN
         bottomLeftCornerOfText = (x1, y1 + 8)
         fontScale              = 1
@@ -227,27 +236,18 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
         #cv2.CHAIN_APPROX_SIMPLE does, removes all redundant points and compresses the contour.
         (_, cnts, _) = cv2.findContours(padded_mask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         
-
-        
-      
-
         # loop over the contours
-        for c in cnts:
-                        
-            
+        for c in cnts:            
             # compute the center of the contour
             M = cv2.moments(c)
             try:
                 area = cv2.contourArea(c)
-                
-                
                 cX = int(M["m10"] / M["m00"])
                 cY = int(M["m01"] / M["m00"])
                    
                 bottomLeftCornerOfText = (cX, cY + 8)
                 fontColor              = (255,255,255)
-                caption                = "{:.0f}".format(area)
-                    
+                caption                = "{:.0f}".format(area)        
                 cv2.putText(frame_adjusted,caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
                  
                 
@@ -269,12 +269,20 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
                 cv2.circle(frame_adjusted, extTop, 2, (255, 0, 0), -1)
                 cv2.circle(frame_adjusted, extBot, 2, (0, 0, 255), -1)
                 
+                
+                #Check for cases that are important 
                 if label in ground_classes:
                     drawline(frame_adjusted,(width/2,height),extBot,color,thickness=1,style='dotted',gap=5)
                     drawline(frame_adjusted,extLeft,extRight,(0,0,255),thickness=1,style='dotted',gap=2)
+                    
+                    annotationSeg = JsonAno.AnnotationSegment()
+                    annotationSeg.addOpencvContour(c)
+                    annotationSeg.add_tag(label)
+                    jsonFilewriter.imageAnnotation.annoation_append(annotationSeg)  
                              
             except ZeroDivisionError:
                 print("Error center calculation")
+    
                          
     #Save image
     x1=10
@@ -295,7 +303,8 @@ def save_instances(saveLoc, image, boxes, masks, class_ids, class_names,
         
     
     cv2.imwrite(saveLoc, frame_adjusted)
-    
+    #saveLocJson="/home/stephen/Videos/atest.txt"
+    jsonFilewriter.write_file(saveLocJson)
 
     
 

@@ -126,9 +126,13 @@ def main():
         results = model.detect([image], verbose=1)
         # Visualize results
         r = results[0]
-        visualize.save_instances(os.path.join(IMAGETestResult_DIR, file_name), image, r['rois'], r['masks'], r['class_ids'],
+        saveImageDir=os.path.join(IMAGETestResult_DIR, file_name)
+        saveJSONDir=os.path.join(IMAGETestResult_DIR,file_name.replace('.png','.json'))
+        #print(saveJSONDir,"saveJSON Dir")
+        #visualize.save_instances(saveImageDir,saveJSONDir, image, r['rois'], r['masks'], r['class_ids'],class_names, r['scores'])
+        
+        visualize.save_instances(saveImageDir ,saveJSONDir ,file_name, image, r['rois'], r['masks'], r['class_ids'],
                                 class_names, r['scores'])
-
 
 if __name__ == '__main__':
     main()
