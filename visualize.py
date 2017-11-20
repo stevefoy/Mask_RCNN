@@ -278,6 +278,7 @@ def save_instances(saveLoc,saveLocJson,  imageName, image, boxes, masks, class_i
                     annotationSeg = JsonAno.AnnotationSegment()
                     annotationSeg.addOpencvContour(c)
                     annotationSeg.add_tag(label)
+                    annotationSeg.addConfidence(score)
                     jsonFilewriter.imageAnnotation.annoation_append(annotationSeg)  
                              
             except ZeroDivisionError:

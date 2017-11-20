@@ -72,13 +72,16 @@ class AnnotationSegment:
             self.tags=None if 'tags' not in s else s['tags']
             self.image_id=None if 'image_id' not in s else s['image_id']
             self.id=None if 'id' not in s else s['id']
+            self.confidence=None if 'confidence' not in s else s['confidence']
         else:         
             self.z_order=0
             self.segmentation = []
             self.tags=[]
+            self.confidence=[]
             self.image_id="XX"
             #example format EE5B8F2A-0CF6-E2A7-77F5-CC3B5B04934A 
             self.id="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+            self.confidence=0
             
     def addPoint(self, x, y):
         self.segmentation.append([x,y])
@@ -86,6 +89,9 @@ class AnnotationSegment:
     def addOpencvContour(self, contour):
         for pt in contour:
             self.segmentation.append([float(pt[0][0]),float(pt[0][1])])
+    
+    def addConfidence(self, confidence):    
+            self.confidence=float(confidence)
         
     def add_tag(self, tag):
         self.tags=tag     
@@ -96,7 +102,8 @@ class AnnotationSegment:
         JsonStr+=str("\"segmentation\":"+json.dumps(self.segmentation)+",")
         JsonStr+=str("\"tags\":["+json.dumps(self.tags)+"], ")
         JsonStr+=str("\"image_id\": " +json.dumps(self.image_id)+", ")
-        JsonStr+=str("\"id\": " +json.dumps(self.id))
+        JsonStr+=str("\"id\": " +json.dumps(self.id)+", ")
+        JsonStr+=str("\"confidence\": " +json.dumps(self.confidence))
         JsonStr+=str("}, ")
         return JsonStr
     
