@@ -100,11 +100,11 @@ class AnnotationSegment:
         JsonStr="{"
         JsonStr+=str("\"z_order\": "+json.dumps(self.z_order)+", ")
         JsonStr+=str("\"segmentation\":"+json.dumps(self.segmentation)+",")
-        JsonStr+=str("\"tags\":["+json.dumps(self.tags)+"], ")
+        JsonStr+=str("\"tags\":"+json.dumps(self.tags)+", ")
         JsonStr+=str("\"image_id\": " +json.dumps(self.image_id)+", ")
         JsonStr+=str("\"id\": " +json.dumps(self.id)+", ")
         JsonStr+=str("\"confidence\": " +json.dumps(self.confidence))
-        JsonStr+=str("}, ")
+        JsonStr+=str("} ")
         return JsonStr
     
 class ImageAnnotation:
@@ -178,11 +178,13 @@ class ImageAnnotation:
         JsonStr+=str("\"annotation\": [")       
         for i, obj in enumerate(self.annotation):
             
-            if i!=len(self.annotation):
-                JsonStr+=obj.json_string()
-            else:
+            if i!=len(self.annotation)-1:
                 JsonStr+=obj.json_string()
                 JsonStr+=str(",")
+                
+            else:
+                JsonStr+=obj.json_string()
+                
         
            
         JsonStr+=str("]")
@@ -236,7 +238,12 @@ if __name__ == "__main__":
     annot = AnnotationSegment()
     imageID.load(fileloc)
     imageID.json_print()
-    imageID.write_file("/home/stephen/Videos/atest.txt")
+    result="/home/stephen/Videos/atest.txt"
+    imageID.write_file(result)
+    
+    imageID2 = ImageDBAnnotation()
+    imageID2.load(result)
+    imageID.json_print()
     
     
     

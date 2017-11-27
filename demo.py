@@ -119,8 +119,8 @@ def main():
     
     for index, file_name in enumerate(file_names):
         print(file_name, " ", index)
-        if index == 10:  # There's gotta be a better way.
-            break
+        #if index == 10:  # There's gotta be a better way.
+            #break
         image = scipy.misc.imread(os.path.join(IMAGETest_DIR, file_name))
         # Run detection
         results = model.detect([image], verbose=1)

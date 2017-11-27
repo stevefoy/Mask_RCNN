@@ -147,22 +147,16 @@ def display_instances(image, boxes, masks, class_ids, class_names,
             ax.add_patch(p)
     ax.imshow(masked_image.astype(np.uint8))
 
-#def save_instances(saveLoc, saveLocJson, imageName, image, boxes, masks, class_ids, class_names,
-#                      scores=None, title="",
-#                      figsize=(16, 16), ax=None):
-
 def save_instances(saveLoc,saveLocJson,  imageName, image, boxes, masks, class_ids, class_names,
-                      scores=None, title="",
-                      figsize=(16, 16), ax=None):    
-    
-    
+                      scores=None):    
     """
+    saveLoc: save location for debug image
+    saveLocJson: save location for JSON
     boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
     masks: [num_instances, height, width]
     class_ids: [num_instances]
     class_names: list of class names of the dataset
     scores: (optional) confidence scores for each box
-    figsize: (optional) the size of the image.
     """
     # Number of instances
     N = boxes.shape[0]
