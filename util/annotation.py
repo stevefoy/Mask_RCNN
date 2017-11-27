@@ -94,7 +94,7 @@ class AnnotationSegment:
             self.confidence=float(confidence)
         
     def add_tag(self, tag):
-        self.tags=tag     
+        self.tags.append(tag)     
             
     def json_string(self):
         JsonStr="{"
@@ -204,7 +204,7 @@ class ImageDBAnnotation:
             data = json.load(f)
             if len(data.keys()) == 1:
                 #ToDo class for ID 
-                self.ImageID=data.keys()[0]
+                self.ImageID=list(data.keys())[0]
                 self.imageAnnotation=ImageAnnotation()
                 self.imageAnnotation.loadJSON(data[data.keys()[0]])
 
