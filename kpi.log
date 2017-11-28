@@ -1,0 +1,105 @@
+kpis for classes: ['car']
+min object size: 0 px
+files: 4837
+mAP: 0.30216185272
+precision: 0.723595327017
+recall: 0.392086902769
+**----------------------------------------------**
+kpis for classes: ['car']
+min object size: 25 px
+files: 4134
+mAP: 0.527519525071
+precision: 0.802925358366
+recall: 0.624912306489
+**----------------------------------------------**
+kpis for classes: ['car']
+min object size: 40 px
+files: 3600
+mAP: 0.591113308211
+precision: 0.834615911095
+recall: 0.676607844316
+**----------------------------------------------**
+kpis for classes: ['car']
+min object size: 50 px
+files: 3285
+mAP: 0.59515338887
+precision: 0.833371824354
+recall: 0.683988427436
+**----------------------------------------------**
+kpis for classes: ['car']
+min object size: 80 px
+files: 2512
+mAP: 0.608024594199
+precision: 0.817341522596
+recall: 0.716062898089
+**----------------------------------------------**
+kpis for classes: ['person']
+min object size: 0 px
+files: 2382
+mAP: 0.246615991571
+precision: 0.711369326997
+recall: 0.297574320491
+**----------------------------------------------**
+kpis for classes: ['person']
+min object size: 25 px
+files: 1868
+mAP: 0.397835509988
+precision: 0.739510904604
+recall: 0.467438482126
+**----------------------------------------------**
+kpis for classes: ['person']
+min object size: 40 px
+files: 1389
+mAP: 0.538806122087
+precision: 0.813225093841
+recall: 0.60574096005
+**----------------------------------------------**
+kpis for classes: ['person']
+min object size: 50 px
+files: 1164
+mAP: 0.576958740109
+precision: 0.852553507966
+recall: 0.62884248217
+**----------------------------------------------**
+kpis for classes: ['person']
+min object size: 80 px
+files: 666
+mAP: 0.673601598922
+precision: 0.926111826112
+recall: 0.699015086515
+**----------------------------------------------**
+kpis for classes: ['car', 'bus', 'truck', 'bicycle', 'motorcycle', 'person']
+min object size: 0 px
+files: 4894
+mAP: 0.261025676439
+precision: 0.654333484351
+recall: 0.359455665083
+**----------------------------------------------**
+kpis for classes: ['car', 'bus', 'truck', 'bicycle', 'motorcycle', 'person']
+min object size: 25 px
+files: 4417
+mAP: 0.447854847925
+precision: 0.703309148273
+recall: 0.568579175928
+**----------------------------------------------**
+kpis for classes: ['car', 'bus', 'truck', 'bicycle', 'motorcycle', 'person']
+min object size: 40 px
+files: 4011
+mAP: 0.522224070291
+precision: 0.731836036871
+recall: 0.637862478932
+**----------------------------------------------**
+kpis for classes: ['car', 'bus', 'truck', 'bicycle', 'motorcycle', 'person']
+min object size: 50 px
+files: 3746
+mAP: 0.538753937725
+precision: 0.735540930269
+recall: 0.65153908708
+**----------------------------------------------**
+kpis for classes: ['car', 'bus', 'truck', 'bicycle', 'motorcycle', 'person']
+min object size: 80 px
+files: 2959
+mAP: 0.572686266001
+precision: 0.751663877221
+recall: 0.688707172629
+**----------------------------------------------**
