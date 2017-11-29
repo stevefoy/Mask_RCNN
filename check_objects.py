@@ -11,7 +11,7 @@ if __name__ == "__main__":
         
     input_folder = sys.argv[1]
     filter_class=sys.argv[2]
-    num_obj=sys.argv[3]
+    num_obj=int(sys.argv[3])
     valid_files=[]
     samples_file=[]
     total_files = 0
@@ -29,7 +29,7 @@ if __name__ == "__main__":
             samples_file.append(ped_cont)
         total_files=total_files+1
     
-    print("Total valid files: " + str(len(valid_files) ) )
+    print("Total valid files: " + str(len(valid_files) )+ " out of "+ str(total_files) )
     print("Avg no. of objects per valid file " + str(np.sum(samples_file)/len(valid_files)  ) ) 
     print("Avg no. of objects on total files " + str(np.sum(samples_file)/total_files) )
     print("Valid samples:")

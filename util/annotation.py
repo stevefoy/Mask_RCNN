@@ -206,7 +206,7 @@ class ImageDBAnnotation:
                 #ToDo class for ID 
                 self.ImageID=list(data.keys())[0]
                 self.imageAnnotation=ImageAnnotation()
-                self.imageAnnotation.loadJSON(data[data.keys()[0]])
+                self.imageAnnotation.loadJSON(data[list(data.keys())[0]])
 
     def json_print(self):
         JsonStr=""
