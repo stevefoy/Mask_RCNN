@@ -5,12 +5,13 @@ import util.annotation
 import numpy as np
 
 if __name__ == "__main__":
-    if len(sys.argv)!=2:
-        print("    Use python check_objects.py <input_folder>")
+    if len(sys.argv)!=4:
+        print("    Use python check_objects.py <input_folder> <class> <min_amount>")
         exit()
         
     input_folder = sys.argv[1]
-    filter_class="person"
+    filter_class=sys.argv[2]
+    num_obj=sys.argv[3]
     valid_files=[]
     samples_file=[]
     total_files = 0
@@ -23,7 +24,7 @@ if __name__ == "__main__":
         for annot in preds.imageAnnotation.annotation:
             if filter_class in annot.tags:
                 ped_cont=ped_cont+1
-        if ped_cont>=1:
+        if ped_cont>=num_obj:
             valid_files.append(filename)
             samples_file.append(ped_cont)
         total_files=total_files+1
