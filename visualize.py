@@ -162,6 +162,7 @@ def save_instances(saveLoc,saveLocJson,  imageName, image, boxes, masks, class_i
     N = boxes.shape[0]
     if not N:
         print("\n*** No instances to display *** \n")
+        return
     else:
         assert boxes.shape[0] == masks.shape[-1] == class_ids.shape[0]
 
@@ -295,8 +296,9 @@ def save_instances(saveLoc,saveLocJson,  imageName, image, boxes, masks, class_i
         print(ground_classes[ground_classes.index(label)],ground_classesCount[ground_classes.index(label)]) 
         
         y1=y1+20
+    #if ground_classesCount[ground_classes.index("person")]<1:
+    #    return
         
-    
     cv2.imwrite(saveLoc, frame_adjusted)
     #saveLocJson="/home/stephen/Videos/atest.txt"
     jsonFilewriter.write_file(saveLocJson)
