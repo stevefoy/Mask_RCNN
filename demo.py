@@ -114,11 +114,14 @@ def main():
         IMAGETest_DIR = "/home/stephen/Videos/mightyAI/valeo_imgs"
         print("Preset input directory", IMAGETest_DIR)
         file_names = next(os.walk(IMAGETest_DIR))[2]
+    if not dirs.get_inputDir().endswith(".txt") and dirs.get_inputDir()!="":
+        print("Input directory", IMAGETest_DIR)
+        file_names = next(os.walk(IMAGETest_DIR))[2]
     if dirs.get_outputDir()=="":
         #IMAGETestResult_DIR = "/home/stephen/Videos/France_TestVideo/PBCS/results"
         IMAGETestResult_DIR = "/home/stephen/Videos/mightyAI/testResults"
         print("Preset output directory", IMAGETestResult_DIR) 
-        file_names = next(os.walk(IMAGETest_DIR))[2]
+        file_names = next(os.walk(IMAGETestResult_DIR))[2]
         
     # Load a random image from the images folder
     
