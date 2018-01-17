@@ -20,7 +20,7 @@ Demo of hashing
 """
 def find_similar_images(userpaths, hashfunc = imagehash.average_hash):
     import os
-    BASE_PATH="/mnt/vision/"
+    BASE_PATH="/mnt/vision/Deep_Learning/Captures_extracted_fullname_15fps/"
     def is_image(filename):
         f = filename.lower()
         return f.endswith(".png") or f.endswith(".jpg") or \
@@ -58,7 +58,7 @@ def find_similar_images(userpaths, hashfunc = imagehash.average_hash):
             hashes.append(hash)            
             images[hash] = img
     
-    print("Total unique images: " + str(len(image.keys() ) ) )
+    print("Total unique images: " + str(len(images.keys() ) ) )
     with open("unique_images.txt","w") as f:
         for k in images.keys():
             print(images[k])
