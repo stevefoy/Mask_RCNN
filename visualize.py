@@ -19,7 +19,7 @@ from matplotlib.patches import Polygon
 from matplotlib.image import imsave
 import IPython.display
  
-import imutils
+#import imutils
 import cv2 
 import utils
 import util as JsonAno
