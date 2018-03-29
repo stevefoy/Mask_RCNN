@@ -1,6 +1,8 @@
 import os
 import sys
 import shutil
+from tqdm import tqdm
+import time
 
 def split_basename(basename):
     base=basename
@@ -42,14 +44,15 @@ def get_file_list(batch_files, files_dict):
     return set(file_list)
                 
 def copy_in_output_folder(outfolder, img_selection):
-    for img in img_selection:
+    for img in tqdm(img_selection):     
         shutil.copy(img, outfolder)
+
     
 if __name__=="__main__":
     
-    batch_files=["batch1.txt","batch2.txt"]
-    all_files="allfiles.txt"
-    outfolder="/mnt/vision/DL/annotation/"
+    batch_files=["batch1.txt","batch2.txt"] #list of filtered images (oyutput of check_objects)
+    all_files="images_ireland.txt" #list of ALL files
+    outfolder="/home/stephen/Pictures/output_irelandResults" #output
     
     files=parse_all_files(all_files)
     img_selection=get_file_list(batch_files, files)

@@ -28,15 +28,22 @@ class InferenceConfig(coco.CocoConfig):
 class readable_dir(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         prospective_dir=values
-        if prospective_dir.endswith(".txt"):
-            setattr(namespace,self.dest,prospective_dir)
-            return
         if not os.path.isdir(prospective_dir):
             raise argparse.ArgumentTypeError("readable_dir:{0} is not a valid path".format(prospective_dir))
         if os.access(prospective_dir, os.R_OK):
             setattr(namespace,self.dest,prospective_dir)
         else:
             raise argparse.ArgumentTypeError("readable_dir:{0} is not a readable dir".format(prospective_dir))
+
+class readable_file(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        prospective_file=values
+        if not os.path.isfile(prospective_file):
+            raise argparse.ArgumentTypeError("readable_file:{0} is not a valid path".format(prospective_file))
+        if os.access(prospective_file, os.R_OK):
+            setattr(namespace,self.dest,prospective_file)
+        else:
+            raise argparse.ArgumentTypeError("readable_file:{0} is not a readable dir".format(prospective_file))
 
     
 class defaultDirectory(object):
@@ -58,11 +65,16 @@ def main():
     parser = argparse.ArgumentParser(description='tool for processing a folder of image with MaskRCNN')
     parser.add_argument('-i', '--inputDir', action=readable_dir, help='input directory to process')
     parser.add_argument('-o', '--outputDir', action=readable_dir, help='output directory to process')
-
+    parser.add_argument('-l', '--inputFileList',  action=readable_file, help='input file with a list of images')
+    
     args = parser.parse_args()
     dirs= defaultDirectory(args.inputDir, args.outputDir)
     IMAGETest_DIR =dirs.get_inputDir()
     IMAGETestResult_DIR=dirs.get_outputDir()
+    
+    fileOfInputImages=""
+    if args.inputFileList != None:
+        fileOfInputImages=args.inputFileList
     
     # Root directory of the project
     ROOT_DIR = os.getcwd()  
@@ -77,6 +89,17 @@ def main():
     
     # Directory of images to run detection on
     IMAGE_DIR = os.path.join(ROOT_DIR, "imagetest")
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     config = InferenceConfig()
     config.print()
@@ -107,51 +130,39 @@ def main():
     
     
     
-    if dirs.get_inputDir().endswith(".txt"):
-        file_names = open(dirs.get_inputDir()).read().splitlines()
-    if dirs.get_inputDir()=="":
-        #IMAGETest_DIR = "/home/stephen/Videos/France_TestVideo/PBCS/images"
-        IMAGETest_DIR = "/home/stephen/Videos/mightyAI/valeo_imgs"
-        print("Preset input directory", IMAGETest_DIR)
-        file_names = next(os.walk(IMAGETest_DIR))[2]
-    if not dirs.get_inputDir().endswith(".txt") and dirs.get_inputDir()!="":
-        print("Input directory", IMAGETest_DIR)
-        file_names = next(os.walk(IMAGETest_DIR))[2]
-    if dirs.get_outputDir()=="":
-        #IMAGETestResult_DIR = "/home/stephen/Videos/France_TestVideo/PBCS/results"
-        IMAGETestResult_DIR = "/home/stephen/Videos/mightyAI/testResults"
-        print("Preset output directory", IMAGETestResult_DIR) 
-        file_names = next(os.walk(IMAGETestResult_DIR))[2]
-        
-    # Load a random image from the images folder
     
-    print("Input Dir: ", IMAGETest_DIR)
-    print("Output dir: ", IMAGETestResult_DIR)
-    for index, file_name in enumerate(file_names):
-        print(file_name)
-        #if index == 10:  # There's gotta be a better way.
-        #    break
-        if IMAGETest_DIR.endswith(".txt"):
-            image = scipy.misc.imread(file_name)
-            if len(image.shape)!=3:
-                continue
-        else:
-            image = scipy.misc.imread(os.path.join(IMAGETest_DIR, file_name))
-        # Run detection
-        results = model.detect([image], verbose=1)
-        # Visualize results
-        r = results[0]
-        if IMAGETest_DIR.endswith(".txt"):
-            saveImageDir=os.path.join(IMAGETestResult_DIR, os.path.basename(file_name))
-            saveJSONDir=os.path.join(IMAGETestResult_DIR,os.path.basename(file_name).replace('.png','.json'))
-        else:
-            saveImageDir=os.path.join(IMAGETestResult_DIR, file_name)
-            saveJSONDir=os.path.join(IMAGETestResult_DIR,file_name.replace('.png','.json'))
-        #print(saveJSONDir,"saveJSON Dir")
-        #visualize.save_instances(saveImageDir,saveJSONDir, image, r['rois'], r['masks'], r['class_ids'],class_names, r['scores'])
-        
-        visualize.save_instances(saveImageDir ,saveJSONDir ,file_name, image, r['rois'], r['masks'], r['class_ids'],
-                                class_names, r['scores'])
+    if fileOfInputImages!="":
+        with open(fileOfInputImages) as file:
+            for index, line in enumerate(file):
+                ImagePath = line.strip() 
+                
+                baseDir, file_name  = os.path.split(ImagePath)
+                
+                #debug test 10
+                #if index == 10:  
+                #    break
+                
+                if os.path.isfile(ImagePath):
+                    #print(ImagePath)
+                    image = scipy.misc.imread(ImagePath)
+                    
+                    # Run detection
+                    results = model.detect([image], verbose=1)
+                    # Visualize results
+                    r = results[0]
+                    print("Counter",index )
+                    
+                    saveImageDir=os.path.join(IMAGETestResult_DIR, file_name)
+                    
+                    saveJSONDir=os.path.join(IMAGETestResult_DIR,file_name.replace('.png','.json'))
+                    visualize.save_instances(saveImageDir ,saveJSONDir ,file_name, image, r['rois'], r['masks'], r['class_ids'],class_names, r['scores'])
+                    
+                else:
+                    print("Error finding", ImagePath)
+    
+    else:
+        print("Error")
+
 
 if __name__ == '__main__':
     main()

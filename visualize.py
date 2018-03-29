@@ -171,7 +171,7 @@ def save_instances(saveLoc,saveLocJson,  imageName, image, boxes, masks, class_i
     colors = random_colors(N)
 
     ## Some ground_classes test cases
-    ground_classes=['person', 'bicycle', 'car', 'motorcycle','bus', 'train', 'truck']
+    ground_classes=['person', 'car']
     ground_classesCount = [0]*len(ground_classes)
     
     # Show area outside image boundaries.
@@ -193,109 +193,116 @@ def save_instances(saveLoc,saveLocJson,  imageName, image, boxes, masks, class_i
         if not np.any(boxes[i]):
             # Skip this instance. Has no bbox. Likely lost in image cropping.
             continue
-        y1, x1, y2, x2 = boxes[i]
-        x, y, w, h = int(x1), int(y1), int(x2 - x1), int(y2 - y1)
-        cv2.rectangle(frame_adjusted, (x, y), (x+w,y+h), (0,0,255), 1, 8, 0)
 
+        
         # Label
         class_id = class_ids[i]
         score = scores[i] if scores is not None else None
         label = class_names[class_id]
-        x = random.randint(x1, (x1 + x2) // 2)
-        caption = "{} {:.2f}".format(label, score) if score else label
+        
         
         if label in ground_classes:
+            
+            y1, x1, y2, x2 = boxes[i]
+            x, y, w, h = int(x1), int(y1), int(x2 - x1), int(y2 - y1)
+            cv2.rectangle(frame_adjusted, (x, y), (x+w,y+h), (0,0,255), 1, 8, 0)
+    
+
+            x = random.randint(x1, (x1 + x2) // 2)
+            caption = "{} {:.2f}".format(label, score) if score else label
+        
+        
             #Stats, if a class exists increase counters
             ground_classesCount[ground_classes.index(label)]=ground_classesCount[ ground_classes.index(label)] +1
             
 
                
             
-        font                   = cv2.FONT_HERSHEY_PLAIN
-        bottomLeftCornerOfText = (x1, y1 + 8)
-        fontScale              = 1
-        fontColor              = (255,255,255)
-        lineType               = 2
-        
-        cv2.putText(frame_adjusted,caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
-
-
-        # Mask
-        mask = masks[:, :, i]      
-        frame_adjusted = apply_mask(frame_adjusted, mask, color)
-        
-        # Mask Polygon, Pad to ensure proper polygons for masks that touch image edges.
-        padded_mask = np.zeros((mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
-        padded_mask[1:-1, 1:-1] = mask
-        #contours = find_contours(padded_mask, 0.5)
-        #cv2.CHAIN_APPROX_SIMPLE does, removes all redundant points and compresses the contour.
-        (_, cnts, _) = cv2.findContours(padded_mask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        
-        # loop over the contours
-        for c in cnts:            
-            # compute the center of the contour
-            M = cv2.moments(c)
-            try:
-                area = cv2.contourArea(c)
-                cX = int(M["m10"] / M["m00"])
-                cY = int(M["m01"] / M["m00"])
-                   
-                bottomLeftCornerOfText = (cX, cY + 8)
-                fontColor              = (255,255,255)
-                caption                = "{:.0f}".format(area)        
-                cv2.putText(frame_adjusted,caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
-                 
-                
-                # draw the contour and center of the shape on the imag
-                cv2.drawContours(frame_adjusted, [c], -1, (0, 255, 0), 1)
-                cv2.circle(frame_adjusted, (cX, cY), 2, (0, 0, 255), -1)
-                
-                
-                # determine the most extreme points along the contour
-                extLeft = tuple(c[c[:, :, 0].argmin()][0])
-                extRight = tuple(c[c[:, :, 0].argmax()][0])
-                extTop = tuple(c[c[:, :, 1].argmin()][0])
-                extBot = tuple(c[c[:, :, 1].argmax()][0])
-                    
+            font                   = cv2.FONT_HERSHEY_PLAIN
+            bottomLeftCornerOfText = (x1, y1 + 8)
+            fontScale              = 1
+            fontColor              = (255,255,255)
+            lineType               = 2
             
-            
-                cv2.circle(frame_adjusted, extLeft, 2, (255, 255, 0), -1)
-                cv2.circle(frame_adjusted, extRight, 2, (125,125, 125), -1)
-                cv2.circle(frame_adjusted, extTop, 2, (255, 0, 0), -1)
-                cv2.circle(frame_adjusted, extBot, 2, (0, 0, 255), -1)
-                
-                
-                #Check for cases that are important 
-                if label in ground_classes:
-                    drawline(frame_adjusted,(width/2,height),extBot,color,thickness=1,style='dotted',gap=5)
-                    drawline(frame_adjusted,extLeft,extRight,(0,0,255),thickness=1,style='dotted',gap=2)
-                    
-                    annotationSeg = JsonAno.AnnotationSegment()
-                    annotationSeg.addOpencvContour(c)
-                    annotationSeg.add_tag(label)
-                    annotationSeg.addConfidence(score)
-                    jsonFilewriter.imageAnnotation.annoation_append(annotationSeg)  
-                             
-            except ZeroDivisionError:
-                print("Error center calculation")
+            cv2.putText(frame_adjusted,caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
     
-                         
-    #Save image
-    x1=10
-    y1=30
-    for label in ground_classes:
+    
+            # Mask
+            mask = masks[:, :, i]      
+            frame_adjusted = apply_mask(frame_adjusted, mask, color)
+            
+            # Mask Polygon, Pad to ensure proper polygons for masks that touch image edges.
+            padded_mask = np.zeros((mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
+            padded_mask[1:-1, 1:-1] = mask
+            #contours = find_contours(padded_mask, 0.5)
+            #cv2.CHAIN_APPROX_SIMPLE does, removes all redundant points and compresses the contour.
+            (_, cnts, _) = cv2.findContours(padded_mask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            
+            # loop over the contours
+            for c in cnts:            
+                # compute the center of the contour
+                M = cv2.moments(c)
+                try:
+                    area = cv2.contourArea(c)
+                    cX = int(M["m10"] / M["m00"])
+                    cY = int(M["m01"] / M["m00"])
+                       
+                    bottomLeftCornerOfText = (cX, cY + 8)
+                    fontColor              = (255,255,255)
+                    caption                = "{:.0f}".format(area)        
+                    cv2.putText(frame_adjusted,caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
+                     
+                    
+                    # draw the contour and center of the shape on the imag
+                    cv2.drawContours(frame_adjusted, [c], -1, (0, 255, 0), 1)
+                    cv2.circle(frame_adjusted, (cX, cY), 2, (0, 0, 255), -1)
+                    
+                    
+                    # determine the most extreme points along the contour
+                    extLeft = tuple(c[c[:, :, 0].argmin()][0])
+                    extRight = tuple(c[c[:, :, 0].argmax()][0])
+                    extTop = tuple(c[c[:, :, 1].argmin()][0])
+                    extBot = tuple(c[c[:, :, 1].argmax()][0])
+                        
+                
+                
+                    cv2.circle(frame_adjusted, extLeft, 2, (255, 255, 0), -1)
+                    cv2.circle(frame_adjusted, extRight, 2, (125,125, 125), -1)
+                    cv2.circle(frame_adjusted, extTop, 2, (255, 0, 0), -1)
+                    cv2.circle(frame_adjusted, extBot, 2, (0, 0, 255), -1)
+                    
+                    
+                    #Check for cases that are important 
+                    if label in ground_classes:
+                        drawline(frame_adjusted,(width/2,height),extBot,color,thickness=1,style='dotted',gap=5)
+                        drawline(frame_adjusted,extLeft,extRight,(0,0,255),thickness=1,style='dotted',gap=2)
+                        
+                        annotationSeg = JsonAno.AnnotationSegment()
+                        annotationSeg.addOpencvContour(c)
+                        annotationSeg.add_tag(label)
+                        annotationSeg.addConfidence(score)
+                        jsonFilewriter.imageAnnotation.annoation_append(annotationSeg)  
+                                 
+                except ZeroDivisionError:
+                    print("Error center calculation")
         
-        font                   = cv2.FONT_HERSHEY_PLAIN
-        bottomLeftCornerOfText = (x1,y1 )
-        fontScale              = 1
-        fontColor              = (255,255,255)
-        lineType               = 2
-        caption = "{} {}".format(ground_classes[ground_classes.index(label)], ground_classesCount[ground_classes.index(label)])
-        cv2.putText(frame_adjusted, caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
-               
-        print(ground_classes[ground_classes.index(label)],ground_classesCount[ground_classes.index(label)]) 
-        
-        y1=y1+20
+                             
+        #Save image
+        x1=10
+        y1=30
+        for label in ground_classes:
+            
+            font                   = cv2.FONT_HERSHEY_PLAIN
+            bottomLeftCornerOfText = (x1,y1 )
+            fontScale              = 1
+            fontColor              = (255,255,255)
+            lineType               = 2
+            caption = "{} {}".format(ground_classes[ground_classes.index(label)], ground_classesCount[ground_classes.index(label)])
+            cv2.putText(frame_adjusted, caption, bottomLeftCornerOfText, font, fontScale,fontColor,lineType)
+                   
+            print(ground_classes[ground_classes.index(label)],ground_classesCount[ground_classes.index(label)]) 
+            
+            y1=y1+20
     #if ground_classesCount[ground_classes.index("person")]<1:
     #    return
         
